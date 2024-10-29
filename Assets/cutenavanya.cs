@@ -39,71 +39,96 @@ public class cutenavanya : MonoBehaviour
         //mesh.SetNormals(normals);
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
+        //StartCoroutine(checkRoutine());
+    }
+
+    private IEnumerator checkRoutine()
+    {
+        while (true) {
+            Debug.Log("step 1");
+            yield return new WaitForSeconds(1f);
+            Debug.Log("Step 2");
+        }
 
     }
 
     private void Update()
     {
-        Vector3[] vertices=mesh.vertices;
+        bool[] f ;bool AddNewVertice = false; int k = 0;
+        f= new bool[(n - 1) / 2];
 
-        if (n == 4)
+        
+
+        if (n != 3)
         {
-            //vertices[n-1].x += 0.5f * Time.deltaTime;
-            //vertices[n-2].x -= 0.5f * Time.deltaTime;
-            float ang = AngleBetween(vertices[2], vertices[0], vertices[1]);
-            if (ang < MathF.PI / 2)
+            f[k++] = UpdateAngle(2, 0, 1);
+        }
+
+        for (int i = 0 ; i + 5 < n ; i += 2)
+        {
+            f[k++] = UpdateAngle(i+4, i+2, i);
+        }
+
+        if (n % 2 == 1)
+        {
+            f[k++] = UpdateDistance();
+        }
+
+        foreach (bool b in f) 
+        {
+            if (b)
             {
-                float y = radius * MathF.Sin(ang + 0.5f * Time.deltaTime);
-                float x = radius * MathF.Cos(ang + 0.5f * Time.deltaTime);
-                Vector3 inc = new Vector3(x, y, 0);
-                vertices[2]=vertices[0]+inc;
-
-                inc.x = -inc.x;
-                vertices[3]=vertices[1]+inc;
-
+                AddNewVertice = true;
             }
             else
             {
-                foreach (Vector3 v in vertices) Debug.Log(v);
-                AddVertice();
+               
+                AddNewVertice = false;
+                break;
             }
-            mesh.SetVertices(vertices);
         }
-        else if (n == 3)
-        {   
-            
-            if (Vector3.Distance(vertices[0], vertices[2]) < radius)
-            {
-                vertices[2].y += 0.5f * Time.deltaTime; 
-                mesh.SetVertices(vertices);
-            }
-            else if (n == 3)
-            {
-                AddVertice();
-            }
-           
-        }
-        else if(n == 5)
-        {
-            if (Vector3.Distance(vertices[4], vertices[2]) < radius)
-            {
-                vertices[4].y += 0.7f * Time.deltaTime;  
-            }
-            float ang = AngleBetween(vertices[2], vertices[0], vertices[1]);
-            if (ang < MathF.PI *0.6f)
-            {
-                float y = radius * MathF.Sin(ang + 0.5f * Time.deltaTime);
-                float x = radius * MathF.Cos(ang + 0.5f * Time.deltaTime);
-                Vector3 inc = new Vector3(x, y, 0);
-                vertices[2] = vertices[0] + inc;
 
-                inc.x = -inc.x;
-                vertices[3] = vertices[1] + inc;
+        if (AddNewVertice) AddVertice();
+                
 
-            }
-            mesh.SetVertices(vertices);
-        }
         
+    }
+    private bool UpdateAngle(int t3, int t2, int t1)
+    {
+        bool done = false;
+        Vector3[] vertices = mesh.vertices; 
+        float ang = AngleBetween(vertices[t3], vertices[t2], vertices[t1]);
+
+        if(ang < MathF.PI*(n-2)/n)
+        { 
+            Vector3 inc = new Vector3(radius * MathF.Cos(ang + 0.5f * Time.deltaTime),
+                radius * MathF.Sin(ang + 0.5f * Time.deltaTime), 0);
+
+            vertices[t3] = vertices[t2] + inc; inc.x = -inc.x;
+            vertices[t3 + 1] = vertices[t2 + 1] + inc;
+            mesh.SetVertices(vertices);
+        }
+        else
+        {
+            done = true;
+        }
+        return done;
+    }
+
+    private bool UpdateDistance()
+    {
+        bool done = false;
+        Vector3[] vertices = mesh.vertices;
+        if (Vector3.Distance(vertices[n-3], vertices[n-1]) < radius)
+        {
+            vertices[n-1].y += Time.deltaTime;
+            mesh.SetVertices(vertices);
+        }
+        else
+        {
+            done = true;
+        }
+        return done;
     }
 
     private void AddVertice()
@@ -132,6 +157,10 @@ public class cutenavanya : MonoBehaviour
         }
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangle, 0);
+
+        Debug.Log("n is "+n);
+        foreach (int i in triangle) Debug.Log(i);
+        foreach (Vector3 v in vertices) Debug.Log(v);
     }
 
     private float AngleBetween(Vector3 v3, Vector3 v2, Vector3 v1)
