@@ -11,6 +11,7 @@ public class cutenavanya : MonoBehaviour
     
     public float radius;
     public int TotalPoints;
+    public float speed =1.5f;
     int n;
 
     // Start is called before the first frame update
@@ -19,27 +20,22 @@ public class cutenavanya : MonoBehaviour
         radius =2;
         TotalPoints = 7;
         n = 3;
-        List<Vector3> vertices = new List<Vector3>
-        {
+
+        List<Vector3> vertices = new List<Vector3> {
             new Vector3( -radius/2,  0,  0), //0
             new Vector3( radius/2,  0,  0), //1
             new Vector3( 0,  0,  0), //2
         };
 
-        List<int> triangles = new List<int>
-        {
-            0,2,1
-        };
+        List<int> triangles = new List<int> {0,2,1};
 
         mesh = new Mesh();
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangles, 0);
         mesh.MarkDynamic();
-        //
-        //mesh.SetNormals(normals);
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
-        //StartCoroutine(checkRoutine());
+        
         StartCoroutine(Expand());
     }
 
@@ -56,8 +52,7 @@ public class cutenavanya : MonoBehaviour
 
             if (n % 2 == 1) f[k++] = UpdateDistance();
 
-            foreach (bool b in f)
-            {
+            foreach (bool b in f){
                 if (b) AddNewVertice = true;
                 else { AddNewVertice = false; break; }
             }
@@ -134,7 +129,7 @@ public class cutenavanya : MonoBehaviour
         Vector3[] vertices = mesh.vertices;
         if (Vector3.Distance(vertices[n-3], vertices[n-1]) < radius)
         {
-            vertices[n-1].y += 1.2f*Time.deltaTime;
+            vertices[n-1].y += speed*Time.deltaTime;
             mesh.SetVertices(vertices);
         }
         else
@@ -206,7 +201,7 @@ public class cutenavanya : MonoBehaviour
         Vector3[] vertices = mesh.vertices;
         if (vertices[n - 3].y < vertices[n - 1].y)
         {
-            vertices[n - 1].y -= 1.2f * Time.deltaTime;
+            vertices[n - 1].y -= speed * Time.deltaTime;
             mesh.SetVertices(vertices);
         }
         else
