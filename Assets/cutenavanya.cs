@@ -17,7 +17,7 @@ public class cutenavanya : MonoBehaviour
     void Start()
     {   
         radius =2;
-        TotalPoints = 9;
+        TotalPoints = 7;
         n = 3;
         List<Vector3> vertices = new List<Vector3>
         {
@@ -76,32 +76,32 @@ public class cutenavanya : MonoBehaviour
     private IEnumerator Shrink()
     {
         while (true) {
+            bool[] f; bool RemoveVertice = false; int k = 0;
+            f = new bool[(n - 1) / 2];
             
-            yield return new WaitForSeconds(0.01f);break;
+            if (n != 3) f[k++] = ReduceAngle(2, 0, 1);
+
+            for (int i = 0; i + 5 < n; i += 2)
+                f[k++] = ReduceAngle(i + 4, i + 2, i);
+
+            if (n % 2 == 1) f[k++] = ReduceDistance();
+
+            foreach (bool b in f)
+            {
+                if (b) RemoveVertice = true;
+                else { RemoveVertice = false; break; }
+            }
+
+            if (RemoveVertice)
+            {   
+                
+                if (n == 3) break;
+                ReduceVertice();
+            }
+
+            yield return new WaitForSeconds(0.01f);
         }
         StartCoroutine(Expand());
-    }
-
-    private void Update()
-    {
-        /*bool[] f ;bool AddNewVertice = false; int k = 0;
-        f= new bool[(n - 1) / 2];
-
-        if (n != 3)     f[k++] = UpdateAngle(2, 0, 1);
-
-        for (int i = 0 ; i + 5 < n ; i += 2)    
-            f[k++] = UpdateAngle(i+4, i+2, i);
-
-        if (n % 2 == 1)    f[k++] = UpdateDistance();
-
-        foreach (bool b in f) {
-            if (b) AddNewVertice = true;
-            else {AddNewVertice = false;  break; } }
-
-        if (AddNewVertice) AddVertice();*/
-
-        //if (grow) StartCoroutine(Expand());
-        
     }
     private bool UpdateAngle(int t3, int t2, int t1)
     {
@@ -155,10 +155,6 @@ public class cutenavanya : MonoBehaviour
         List<Vector3> vertices = VerticesArray.ToList();
         List<int> triangle=TriangleArray.ToList();
         
-        Debug.Log("n is "+n);
-        //foreach (int i in triangle) Debug.Log(i);
-        foreach (Vector3 v in vertices) Debug.Log(v);
-        
         if (n % 2 == 0) // Even - Add a new vertice at the same place
         {
             vertices.Add(vertices[n - 2]); // as n has been increased at the start
@@ -177,9 +173,69 @@ public class cutenavanya : MonoBehaviour
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangle, 0);
 
-        Debug.Log("After");
-        //foreach (int i in triangle) Debug.Log(i);
-        foreach (Vector3 v in vertices) Debug.Log(v);
+    }
+
+    private bool ReduceAngle(int t3, int t2, int t1)
+    {
+        bool done = false;
+        Vector3[] vertices = mesh.vertices;
+
+
+        if (AngleBetween(vertices[t3], vertices[t2], vertices[t1]) > MathF.PI * (n - 3) / (n-1))
+        {
+            Vector3 Base = vertices[t2];
+            Base.x += radius;
+            float ang = AngleBetween(vertices[t3], vertices[t2], Base);
+            Vector3 inc = new Vector3(radius * MathF.Cos(ang - 0.5f * Time.deltaTime),
+                radius * MathF.Sin(ang - 0.5f * Time.deltaTime), 0);
+
+            vertices[t3] = vertices[t2] + inc; inc.x = -inc.x;
+            vertices[t3 + 1] = vertices[t2 + 1] + inc;
+            mesh.SetVertices(vertices);
+        }
+        else
+        {
+            done = true;
+        }
+        return done;
+    }
+
+    private bool ReduceDistance()
+    {
+        bool done = false;
+        Vector3[] vertices = mesh.vertices;
+        if (vertices[n - 3].y < vertices[n - 1].y)
+        {
+            vertices[n - 1].y -= 1.2f * Time.deltaTime;
+            mesh.SetVertices(vertices);
+        }
+        else
+        {
+            done = true;
+        }
+        return done;
+    }
+
+    private void ReduceVertice()
+    {
+        n -= 1;
+        Vector3[] VerticesArray = mesh.vertices;
+        int[] TriangleArray = mesh.triangles;
+
+        List<Vector3> vertices = VerticesArray.ToList();
+        List<int> triangle = TriangleArray.ToList();
+
+        vertices.RemoveAt(n);
+        
+        int l=triangle.Count;
+        triangle.RemoveAt(l-1);
+        triangle.RemoveAt(l-2);
+        triangle.RemoveAt(l-3);
+
+        mesh.SetTriangles(triangle, 0);
+        mesh.SetVertices(vertices);
+        
+
     }
 
     private float AngleBetween(Vector3 v3, Vector3 v2, Vector3 v1)
