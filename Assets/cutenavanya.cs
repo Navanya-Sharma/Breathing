@@ -9,7 +9,7 @@ public class cutenavanya : MonoBehaviour
 {
     private Mesh mesh;
     
-    public int radius;
+    public float radius;
     public int TotalPoints;
     int n;
 
@@ -17,7 +17,7 @@ public class cutenavanya : MonoBehaviour
     void Start()
     {   
         radius =2;
-        TotalPoints = 4;
+        TotalPoints = 9;
         n = 3;
         List<Vector3> vertices = new List<Vector3>
         {
@@ -40,67 +40,80 @@ public class cutenavanya : MonoBehaviour
 
         GetComponent<MeshFilter>().sharedMesh = mesh;
         //StartCoroutine(checkRoutine());
+        StartCoroutine(Expand());
     }
 
-    private IEnumerator checkRoutine()
+    private IEnumerator Expand()
     {
         while (true) {
-            Debug.Log("step 1");
-            yield return new WaitForSeconds(1f);
-            Debug.Log("Step 2");
-        }
+            bool[] f; bool AddNewVertice = false; int k = 0;
+            f = new bool[(n - 1) / 2];
 
+            if (n != 3) f[k++] = UpdateAngle(2, 0, 1);
+
+            for (int i = 0; i + 5 < n; i += 2)
+                f[k++] = UpdateAngle(i + 4, i + 2, i);
+
+            if (n % 2 == 1) f[k++] = UpdateDistance();
+
+            foreach (bool b in f)
+            {
+                if (b) AddNewVertice = true;
+                else { AddNewVertice = false; break; }
+            }
+
+            if (AddNewVertice) { 
+                if (n == TotalPoints) break;
+                AddVertice(); }
+            
+            yield return new WaitForSeconds(0.01f);
+        }
+        
+        StartCoroutine(Shrink());
+        
+    }
+
+    private IEnumerator Shrink()
+    {
+        while (true) {
+            
+            yield return new WaitForSeconds(0.01f);break;
+        }
+        StartCoroutine(Expand());
     }
 
     private void Update()
     {
-        bool[] f ;bool AddNewVertice = false; int k = 0;
+        /*bool[] f ;bool AddNewVertice = false; int k = 0;
         f= new bool[(n - 1) / 2];
 
-        
+        if (n != 3)     f[k++] = UpdateAngle(2, 0, 1);
 
-        if (n != 3)
-        {
-            f[k++] = UpdateAngle(2, 0, 1);
-        }
-
-        for (int i = 0 ; i + 5 < n ; i += 2)
-        {
+        for (int i = 0 ; i + 5 < n ; i += 2)    
             f[k++] = UpdateAngle(i+4, i+2, i);
-        }
 
-        if (n % 2 == 1)
-        {
-            f[k++] = UpdateDistance();
-        }
+        if (n % 2 == 1)    f[k++] = UpdateDistance();
 
-        foreach (bool b in f) 
-        {
-            if (b)
-            {
-                AddNewVertice = true;
-            }
-            else
-            {
-               
-                AddNewVertice = false;
-                break;
-            }
-        }
+        foreach (bool b in f) {
+            if (b) AddNewVertice = true;
+            else {AddNewVertice = false;  break; } }
 
-        if (AddNewVertice) AddVertice();
-                
+        if (AddNewVertice) AddVertice();*/
 
+        //if (grow) StartCoroutine(Expand());
         
     }
     private bool UpdateAngle(int t3, int t2, int t1)
     {
         bool done = false;
         Vector3[] vertices = mesh.vertices; 
-        float ang = AngleBetween(vertices[t3], vertices[t2], vertices[t1]);
+        
 
-        if(ang < MathF.PI*(n-2)/n)
+        if(AngleBetween(vertices[t3], vertices[t2], vertices[t1]) < MathF.PI*(n-2)/n)
         { 
+            Vector3 Base = vertices[t2];
+            Base.x += radius;
+            float ang = AngleBetween(vertices[t3], vertices[t2], Base);
             Vector3 inc = new Vector3(radius * MathF.Cos(ang + 0.5f * Time.deltaTime),
                 radius * MathF.Sin(ang + 0.5f * Time.deltaTime), 0);
 
@@ -121,7 +134,7 @@ public class cutenavanya : MonoBehaviour
         Vector3[] vertices = mesh.vertices;
         if (Vector3.Distance(vertices[n-3], vertices[n-1]) < radius)
         {
-            vertices[n-1].y += Time.deltaTime;
+            vertices[n-1].y += 1.2f*Time.deltaTime;
             mesh.SetVertices(vertices);
         }
         else
@@ -134,12 +147,18 @@ public class cutenavanya : MonoBehaviour
     private void AddVertice()
     {
         n += 1;
+        
+        
         Vector3[] VerticesArray = mesh.vertices;
         int[] TriangleArray = mesh.triangles;
 
         List<Vector3> vertices = VerticesArray.ToList();
         List<int> triangle=TriangleArray.ToList();
-
+        
+        Debug.Log("n is "+n);
+        //foreach (int i in triangle) Debug.Log(i);
+        foreach (Vector3 v in vertices) Debug.Log(v);
+        
         if (n % 2 == 0) // Even - Add a new vertice at the same place
         {
             vertices.Add(vertices[n - 2]); // as n has been increased at the start
@@ -158,8 +177,8 @@ public class cutenavanya : MonoBehaviour
         mesh.SetVertices(vertices);
         mesh.SetTriangles(triangle, 0);
 
-        Debug.Log("n is "+n);
-        foreach (int i in triangle) Debug.Log(i);
+        Debug.Log("After");
+        //foreach (int i in triangle) Debug.Log(i);
         foreach (Vector3 v in vertices) Debug.Log(v);
     }
 
