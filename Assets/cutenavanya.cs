@@ -9,16 +9,14 @@ public class cutenavanya : MonoBehaviour
 {
     private Mesh mesh;
     
-    public float radius;
-    public int TotalPoints;
-    public float speed =1.5f;
-    int n;
+    float radius;
+    int TotalPoints=8, n;
+    public float speed =2f, angSpeed=0.9f, t=1f;
 
     // Start is called before the first frame update
     void Start()
     {   
         radius =2;
-        TotalPoints = 7;
         n = 3;
 
         List<Vector3> vertices = new List<Vector3> {
@@ -61,11 +59,16 @@ public class cutenavanya : MonoBehaviour
                 if (n == TotalPoints) break;
                 AddVertice(); }
             
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForSeconds(0.00005f);
         }
+
+        Invoke("st",t);
         
+    }
+
+    void st()
+    {
         StartCoroutine(Shrink());
-        
     }
 
     private IEnumerator Shrink()
@@ -94,8 +97,13 @@ public class cutenavanya : MonoBehaviour
                 ReduceVertice();
             }
 
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForSeconds(0.00005f);
         }
+        Invoke("stt", t);
+        
+    }
+    void stt()
+    {
         StartCoroutine(Expand());
     }
     private bool UpdateAngle(int t3, int t2, int t1)
@@ -109,8 +117,8 @@ public class cutenavanya : MonoBehaviour
             Vector3 Base = vertices[t2];
             Base.x += radius;
             float ang = AngleBetween(vertices[t3], vertices[t2], Base);
-            Vector3 inc = new Vector3(radius * MathF.Cos(ang + 0.5f * Time.deltaTime),
-                radius * MathF.Sin(ang + 0.5f * Time.deltaTime), 0);
+            Vector3 inc = new Vector3(radius * MathF.Cos(ang + angSpeed * Time.deltaTime),
+                radius * MathF.Sin(ang + angSpeed * Time.deltaTime), 0);
 
             vertices[t3] = vertices[t2] + inc; inc.x = -inc.x;
             vertices[t3 + 1] = vertices[t2 + 1] + inc;
@@ -181,8 +189,8 @@ public class cutenavanya : MonoBehaviour
             Vector3 Base = vertices[t2];
             Base.x += radius;
             float ang = AngleBetween(vertices[t3], vertices[t2], Base);
-            Vector3 inc = new Vector3(radius * MathF.Cos(ang - 0.5f * Time.deltaTime),
-                radius * MathF.Sin(ang - 0.5f * Time.deltaTime), 0);
+            Vector3 inc = new Vector3(radius * MathF.Cos(ang - angSpeed * Time.deltaTime),
+                radius * MathF.Sin(ang - angSpeed * Time.deltaTime), 0);
 
             vertices[t3] = vertices[t2] + inc; inc.x = -inc.x;
             vertices[t3 + 1] = vertices[t2 + 1] + inc;
